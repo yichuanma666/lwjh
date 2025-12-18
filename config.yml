@@ -1,0 +1,30 @@
+# 示例配置文件
+
+default:
+  # 默认启用的数据源
+  enabled_sources:
+    - arxiv
+    - crossref
+    # - semantic_scholar  # 需要 API Key，默认注释
+
+  # 全局搜索默认参数
+  query: "large language model"
+  max_results: 50
+  from_year: 2018
+
+  # 速率限制（每个源单独控制）
+  rate_limit:
+    requests_per_minute: 20
+
+  # 存储设置
+  storage:
+    backend: "csv"  # csv / json / sqlite（预留）
+    output_path: "data/results.csv"
+
+  # 各数据源的额外配置
+  sources:
+    semantic_scholar:
+      api_key: "YOUR_API_KEY_HERE"
+      base_url: "https://api.semanticscholar.org/graph/v1"
+
+

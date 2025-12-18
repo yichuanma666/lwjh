@@ -1,0 +1,35 @@
+部署相关文件清单
+================
+
+📁 项目根目录下的部署文件：
+
+✅ 文档类：
+- DEPLOYMENT.md              - 完整部署指南（详细步骤）
+- QUICK_START_DEPLOY.md      - 快速部署参考
+- DEPLOY_README.md           - 部署文件位置说明
+- 部署说明.txt               - 简要说明
+
+✅ 配置类（位于 deploy/ 目录）：
+- deploy/deploy.sh                    - ⭐ 自动化部署脚本（主要文件）
+- deploy/qk-paper-search.service      - Systemd 服务配置
+- deploy/nginx.conf.example           - Nginx 配置示例
+- deploy/README.md                    - 配置文件说明
+
+✅ Docker 类：
+- Dockerfile                 - Docker 镜像构建文件
+- docker-compose.yml         - Docker Compose 配置
+- .dockerignore              - Docker 构建忽略文件
+
+🔍 重要提示：
+- 部署脚本 deploy.sh 位于：deploy/deploy.sh（不是项目根目录）
+- 在 Linux 服务器上运行时使用：sudo ./deploy/deploy.sh
+- 脚本只能在 Linux 服务器上运行，不能直接用 Windows 运行
+
+📖 快速开始：
+1. 查看 QUICK_START_DEPLOY.md 了解快速部署步骤
+2. 查看 DEPLOYMENT.md 了解详细部署说明
+3. 部署脚本使用方法：查看 deploy/README.md
+
+
+
+

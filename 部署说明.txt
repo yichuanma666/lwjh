@@ -1,0 +1,21 @@
+部署脚本位置说明
+================
+
+部署脚本位于：deploy/deploy.sh
+
+使用方法：
+1. 在 Linux 服务器上，进入项目目录
+2. 运行：sudo ./deploy/deploy.sh
+
+注意：此脚本需要在 Linux 服务器上运行，不能在 Windows 本地运行。
+
+Windows 用户部署步骤：
+1. 将整个项目文件夹上传到 Linux 服务器
+2. 通过 SSH 连接到服务器
+3. 在服务器上运行部署脚本
+
+详细部署说明请查看：DEPLOYMENT.md
+
+
+
+

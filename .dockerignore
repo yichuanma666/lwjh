@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# 项目特定
+*.csv
+*.json
+data/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# 部署相关
+deploy/
+*.md
+!README.md
+
+# 配置文件（避免覆盖容器内的配置）
+# config.yml  # 注释掉，因为我们想在 docker-compose 中挂载它
+
+# 其他
+.DS_Store
+*.bak
+
+
+
+

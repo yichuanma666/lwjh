@@ -1,0 +1,15 @@
+# 兼容旧系统的依赖版本
+# 如果服务器上的 pip 版本较旧，可以使用这个文件替代 requirements.txt
+# 使用方法: pip install -r requirements-old.txt
+#
+# 如果这个文件仍然失败，请使用 requirements-minimal.txt
+
+requests>=2.25.0
+PyYAML>=5.4.0
+dataclasses-json>=0.5.7
+tenacity>=8.0.0
+fastapi>=0.83.0
+uvicorn[standard]>=0.23.0
+jinja2>=3.0.0
+python-multipart>=0.0.5
+
