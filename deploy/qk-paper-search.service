@@ -1,0 +1,28 @@
+[Unit]
+Description=论文聚合搜索 Web 服务
+After=network.target
+
+[Service]
+Type=simple
+# 修改为你的用户名和组（建议使用非 root 用户）
+User=www-data
+Group=www-data
+# 修改为你的项目路径
+WorkingDirectory=/opt/qk
+Environment="PATH=/opt/qk/venv/bin"
+# 根据服务器 CPU 核心数调整 workers 数量（建议为 CPU 核心数 × 2）
+ExecStart=/opt/qk/venv/bin/uvicorn src.web.app:app --host 127.0.0.1 --port 8000 --workers 4
+Restart=always
+RestartSec=10
+
+# 日志设置
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=qk-paper-search
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+

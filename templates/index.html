@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>论文聚合搜索</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>论文聚合搜索</h1>
+      <p class="subtitle">基于 arXiv / CrossRef / Semantic Scholar 的多源合规检索</p>
+    </header>
+
+    <section class="search-section">
+      <form method="post" action="/search" class="search-form">
+        <div class="field">
+          <label for="query">关键词（题目 / 摘要 / 其他字段）</label>
+          <input type="text" id="query" name="query" value="{{ query }}" placeholder="例如：large language model" required />
+        </div>
+
+        <div class="field">
+          <label for="title_filter">题目包含（可选，进一步筛选）</label>
+          <input type="text" id="title_filter" name="title_filter" value="{{ title_filter }}" placeholder="例如：attention is all you need" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="from_year">起始年份（可选）</label>
+            <input type="number" id="from_year" name="from_year" value="{{ from_year }}" min="1900" max="2100" />
+          </div>
+          <div class="field">
+            <label for="max_results">每源最大条数</label>
+            <input type="number" id="max_results" name="max_results" value="{{ max_results }}" min="1" max="200" />
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label">数据源</span>
+          <div class="checkbox-group">
+            {% for src in available_sources %}
+            <label class="checkbox">
+              <input
+                type="checkbox"
+                name="sources"
+                value="{{ src }}"
+                {% if src in sources %}checked{% endif %}
+              />
+              {{ src }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit">搜索</button>
+          <button type="submit" formaction="/download" formmethod="post" class="secondary">
+            导出当前结果为 CSV
+          </button>
+          <button type="button" id="download-pdfs-btn" class="secondary" style="display: none;">
+            批量下载开放获取 PDF
+          </button>
+        </div>
+
+        {% if error %}
+        <p class="error">发生错误：{{ error }}</p>
+        {% endif %}
+      </form>
+    </section>
+
+    <section class="results-section">
+      <h2>搜索结果</h2>
+      {% if papers and papers|length > 0 %}
+      <p class="results-count">共 {{ papers|length }} 篇去重后论文</p>
+      <ul class="paper-list">
+        {% for p in papers %}
+        <li class="paper-item">
+          <h3 class="paper-title">
+            {% if p.url %}
+            <a href="{{ p.url }}" target="_blank" rel="noopener noreferrer">{{ p.title }}</a>
+            {% else %}
+            {{ p.title }}
+            {% endif %}
+          </h3>
+          <p class="paper-meta">
+            <span>来源：{{ p.source }}</span>
+            {% if p.published_at %}
+            <span> | 年份：{{ p.published_at.year }}</span>
+            {% endif %}
+            {% if p.doi %}
+            <span> | DOI：{{ p.doi }}</span>
+            {% endif %}
+            {% if p.extra and p.extra.get("is_open_access") %}
+            <span class="oa-badge"> | 开放获取
+              {% if p.extra.get("unpaywall_detected") %}
+              <span class="unpaywall-badge" title="通过 Unpaywall 检测到的开放获取版本">(Unpaywall)</span>
+              {% endif %}
+            </span>
+            {% endif %}
+          </p>
+          {% if p.authors %}
+          <p class="paper-authors">作者：{{ ", ".join(p.authors[:6]) }}{% if p.authors|length > 6 %} 等{% endif %}</p>
+          {% endif %}
+          {% if p.abstract %}
+          <p class="paper-abstract">{{ p.abstract[:300] }}{% if p.abstract|length > 300 %}...{% endif %}</p>
+          {% endif %}
+
+          <p class="paper-links">
+            {% if p.url %}
+            <a href="{{ p.url }}" target="_blank" rel="noopener noreferrer" class="link-btn">打开原文</a>
+            {% endif %}
+            {% if p.extra and p.extra.get("pdf_url") %}
+            <a href="{{ p.extra.get('pdf_url') }}" target="_blank" rel="noopener noreferrer" class="link-btn pdf-link" download>下载 PDF</a>
+            {% elif p.extra and p.extra.get("is_open_access") %}
+            <span class="link-btn disabled">需要机构订阅</span>
+            {% endif %}
+            {% if not p.extra or not p.extra.get("is_open_access") and p.source != "arxiv" %}
+            <span class="link-btn disabled" title="该论文为收费期刊，请通过合法途径访问">收费期刊</span>
+            {% endif %}
+          </p>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="no-results">暂无结果，请输入关键词进行搜索。</p>
+      {% endif %}
+    </section>
+
+    <footer>
+      <p>本工具仅供学习与研究使用，请遵守各数据源服务条款与 robots.txt。</p>
+      <p class="compliance-warning">
+        ⚠️ <strong>合规说明</strong>：本工具仅下载开放获取（Open Access）论文。对于收费期刊论文，只提供元数据和合法访问链接。
+        请勿使用本工具绕过付费墙或违反版权法。使用前请确保遵守各期刊和数据库的服务条款。
+        <br />
+        <strong>Unpaywall 集成</strong>：本工具集成了 Unpaywall API，这是一个合法的开放获取检测服务，通过 DOI 查找论文的开放获取版本。
+        这有助于最大化发现和下载合法的开放获取论文，而不需要绕过任何付费墙。
+      </p>
+    </footer>
+  </div>
+
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <p>正在搜索论文，请稍候...</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.querySelector(".search-form");
+      const overlay = document.getElementById("loading-overlay");
+      if (form && overlay) {
+        form.addEventListener("submit", function () {
+          overlay.classList.remove("hidden");
+        });
+      }
+
+      // 检查是否有开放获取论文，显示批量下载按钮
+      const papers = document.querySelectorAll(".paper-item");
+      let hasOpenAccess = false;
+      papers.forEach(paper => {
+        const pdfLink = paper.querySelector(".pdf-link");
+        if (pdfLink) {
+          hasOpenAccess = true;
+        }
+      });
+      
+      const downloadBtn = document.getElementById("download-pdfs-btn");
+      if (downloadBtn && hasOpenAccess) {
+        downloadBtn.style.display = "inline-block";
+        downloadBtn.addEventListener("click", function() {
+          const pdfLinks = document.querySelectorAll(".pdf-link");
+          if (pdfLinks.length > 0) {
+            if (confirm(`将下载 ${pdfLinks.length} 篇开放获取论文的 PDF。是否继续？`)) {
+              pdfLinks.forEach((link, index) => {
+                setTimeout(() => {
+                  link.click();
+                }, index * 500); // 每 500ms 下载一个，避免过快
+              });
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
+
